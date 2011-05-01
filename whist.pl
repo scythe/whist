@@ -14,6 +14,13 @@ $VERSION = '0.99.3';
     license     => 'Public Domain',
 );
 
+
+# global variables
+our @hands;
+our @deck;
+our $playing;
+our $trick;
+
 # package whist;
 sub event_privmsg {
     # $data = "nick/#channel :text"
@@ -39,10 +46,10 @@ sub cmd_deal {
 
 sub new_deck {		# defines a bunch of global variables. Sue me, SPJ.
 	package main;
-	our $playing = 1;
-	our $trick = 1;		# number of the trick we're on. Counts from 1, I know, sue me.
-	our @deck = ();		# Acts as a reverse-index to the hands array.
-	our @hands = ();	# Contains cards in the order of shuffling, so that player 1's hand is cards 0-12, player 2 has cards 13-25, et cetera. 
+	$playing = 1;
+	$trick = 1;		# number of the trick we're on. Counts from 1, I know, sue me.
+	@deck = ();		# Acts as a reverse-index to the hands array.
+	@hands = ();	# Contains cards in the order of shuffling, so that player 1's hand is cards 0-12, player 2 has cards 13-25, et cetera. 
 	
 	my $i = 0;
 	for(; $i < 52; $i++) {
@@ -77,8 +84,8 @@ sub play_card {
 		$server->command("MSG $target That's not your card!");
 		return;
 	}
-	@hands[$position] = -1;
-	@deck[$cardnum] = -1;
+	$hands[$position] = -1;
+	$deck[$cardnum] = -1;
 	return;
 }
 
