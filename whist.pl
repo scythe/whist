@@ -21,14 +21,6 @@ our @deck;
 our $playing;
 our $trick;
 
-# package whist;
-sub event_privmsg {
-    # $data = "nick/#channel :text"
-    my ($server, $data, $nick, $address) = @_;
-    my ($target, $text) = split(/ :/, $data, 2);
-    return;
-}
-
 sub array_concat {
 	my $ret = "";
 	foreach my $c (@_) {
