@@ -142,7 +142,7 @@ sub handle_msgs {
 			$hand = $hand . untranslate($hands[$i]);
 		}
 		$server->command("MSG $nick Your hand contains $hand ");
-		if($numplayers = 4) {
+		if($numplayers == 4) {
 			$trick = 1;
 			$turn = 0;
 			@player_scores = qw(0 0 0 0);
