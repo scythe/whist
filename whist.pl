@@ -139,7 +139,7 @@ sub handle_msgs {
 		$numplayers++;
 		my $hand = "";
 		for(my $i = ($numplayers - 1) * 13; $i < $numplayers * 13; $i++ ) {
-			$hand = $hand . untranslate($hands[$i]);
+			$hand = $hand . untranslate($hands[$i]) . ", ";
 		}
 		$server->command("MSG $nick Your hand contains $hand ");
 		if($numplayers == 4) {
@@ -171,7 +171,7 @@ sub untranslate {				# converts card numbers to number / suit format
 	my %nums = qw(14 a 13 k 12 q 11 j);
 	$suit = $suits{$suit};
         if($nums{$num}) {$num = $nums{$num};}
-	return "$num $suit";
+	return "$num of $suit";
 }
 # 1;
 our $playing = 0;
