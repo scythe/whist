@@ -111,6 +111,8 @@ sub play_card {
 	if($turn == $trickstarter) { # if it is the end of a trick
 		return score_trick($server, $target);
 	}
+	
+	$server->command("MSG " . $players[$turn] . " It's your turn.");
 }
 
 sub score_trick {
@@ -133,6 +135,7 @@ sub score_trick {
 	if($trick == 13) {
 		return end_game($server, $target);
 	}
+	$server->command("MSG " . $players[$trickstarter] . " It's your turn.");
 }
 
 sub end_game {
@@ -163,7 +166,7 @@ sub handle_msgs {
 		new_deck();
 	}
 	if(substr($message,0,5) eq "!play" and ($playing == 1 or $server->command("MSG $target We haven't started yet!") and 0)) {
-		play_card(translate(substr($message, 6)), substr($nick,0,length($nick) - 1), $server, $target);
+		play_card(translate(substr($message, 6)), substr($nick,0,length($nick)), $server, $target);
 	}
 	if(substr($message, 0, 5) eq "!join" and ($playing == 2 or $server->command("MSG $target You have to wait for the next game.") and 0)) {
 		$players[$numplayers] = $nick;
