@@ -23,6 +23,9 @@ our $numplayers;
 our $turn;
 our @trickcards;
 our @player_scores;
+our $trumpsuit;
+our $tricksuit;
+our $trickstarter;
 
 sub array_concat {
 	my $ret = "";
@@ -58,10 +61,32 @@ sub new_deck {		# defines a bunch of global variables. Sue me, SPJ.
 	Irssi::print(array_concat(@deck));
 }
 
+sub compare_cards {  # returns 1 if first card > second card, 0 otherwise
+	my ($first, $second) = @_;
+
+	if ($first % 4 == $tricksuit) {
+		$first = $first + 100;
+	}
+	if ($second % 4 == $tricksuit) {
+		$second = $second + 100;
+	}
+	if($first % 4 == $trumpsuit) {
+		$first = $first + 200;
+	}
+	if($second % 4 == $trumpsuit) {
+		$second = $second + 200;
+	}
+	if($first > $second) {
+		return 1;
+	}
+	return 0;
+}
+
 sub play_card {
 	my ($cardnum, $player, $server, $target) = @_;
 	package main;
 	
+	Irssi::print("playing $cardnum from $player");
 	my $position = $deck[$cardnum];
 	if($position == -1) {
 		return;
@@ -75,8 +100,14 @@ sub play_card {
 	$trickcards[$turn] = $hands[$position];
 	$hands[$position] = -1;
 	$deck[$cardnum] = -1;
-	$turn++;
-	if($turn == 4) {
+	
+	if($turn = $trickstarter) { # if it is the beginning of a trick
+		$tricksuit = $trickcards[$turn] % 4;
+	}
+	
+	$turn = ($turn + 1) % 4;
+	
+	if($turn == $trickstarter) { # if it is the end of a trick
 		return score_trick($server, $target);
 	}
 }
@@ -95,7 +126,8 @@ sub score_trick {
 	$player_scores[$tc_winner] += 1;
 	$server->command("MSG $target " . array_concat(@players));
 	$server->command("MSG $target " . array_concat(@player_scores));
-	$turn = 0;
+	$turn = $tc_winner;
+	$trickstarter = $tc_winner;
 	
 	if($trick == 13) {
 		return end_game($server, $target);
@@ -145,6 +177,8 @@ sub handle_msgs {
 			$turn = 0;
 			@player_scores = qw(0 0 0 0);
 			$playing = 1;
+			$server->command("MSG $target trumps are " . untranslate($hands[51]));
+			$trumpsuit = $hands[51] % 4;
 			$server->command("MSG " . $players[0] . " it's your turn.");
 		}
 	}
@@ -170,7 +204,7 @@ sub untranslate {				# converts card numbers to number / suit format
 	my %nums = qw(14 a 13 k 12 q 11 j);
 	$suit = $suits{$suit};
         if($nums{$num}) {$num = $nums{$num};}
-	return "$num of $suit";
+	return "$num $suit";
 }
 # 1;
 our $playing = 0;
