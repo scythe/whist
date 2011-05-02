@@ -95,6 +95,7 @@ sub play_card {
 	my $owner_name = $players[$owner];
 	if($player ne $owner_name) { 	# if the person trying to play the card is not the person who has it in their hand
 		$server->command("MSG $target That's not your card!");
+		Irssi::print("Card $cardnum belongs to $owner_name ( $owner )");
 		return;
 	}
 	$trickcards[$turn] = $hands[$position];
