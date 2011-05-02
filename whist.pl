@@ -3,15 +3,13 @@ use vars qw($VERSION %IRSSI);
 
 use Irssi;
 use Irssi::Irc;
-$VERSION = '0.99.3';
+$VERSION = '0.99.4';
 %IRSSI = (
     authors     => 'scythe',
     contact     => 'scythe on irc.mountai.net',
-    name        => 'Whist 0.99.3',
-    description => 'This script allows ' .
-    'you to print Hello ' .
-    'World using a command.',
-    license     => 'Public Domain',
+    name        => 'Whist 0.99.4',
+    description => 'play whist via IRC',
+    license     => 'Apache v2.',
 );
 
 
@@ -146,6 +144,7 @@ sub handle_msgs {
 			$trick = 1;
 			$turn = 0;
 			@player_scores = qw(0 0 0 0);
+			$playing = 1;
 			$server->command("MSG " . $players[0] . " it's your turn.");
 		}
 	}
