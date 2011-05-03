@@ -130,6 +130,7 @@ sub play_card {
 	Irssi::print("playing $cardnum from $player");
 	my $position = $deck[$cardnum];
 	if($position == -1) {
+		$server->command("MSG $target That's not your card!");
 		return;
 	}
 	my $owner = int($position / 13);
@@ -193,14 +194,14 @@ sub handle_msgs {
 sub translate {					# converts number / suit format to card numbers
 	my ($arg) = @_;
 	my ($num, $suit) = split(/\s+/, $arg);  # cards must have number and suit separated by a space
-	my %suits = qw (c 0 d 1 h 2 s 3);
+	my %suits = qw (c 1 d 2 h 3 s 4);
 	my %nums = qw(a 14 k 13 q 12 j 11);
 	if(not $suits{$suit}) {
 		Irssi::print("suit not found: $suit");
 		return -1;
 	}
 	if($nums{$num}) {$num = $nums{$num};}
-	return ($num - 2) * 4 + $suits{$suit};
+	return ($num - 2) * 4 + $suits{$suit} - 1;
 }
 sub untranslate {				# converts card numbers to number / suit format
 	my ($cardnum) = @_;
