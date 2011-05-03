@@ -82,6 +82,48 @@ sub compare_cards {  # returns 1 if first card > second card, 0 otherwise
 	return 0;
 }
 
+sub end_game {
+	my ($server, $target) = @_;
+	my $ps_winner = -1;
+	my $ps_max = -1;
+	for(my $i = 0; $i < 4; $i++) {
+		if($player_scores[$i] > $ps_max) {
+			$ps_winner = $i;
+			$ps_max = $player_scores[$i];
+		}
+	}
+	$server->command("MSG $target " . $players[$ps_winner] . " wins with " . $player_scores[$ps_winner] . " points!");
+	$playing = 0;
+	$trick = 0;
+	$numplayers = 0;
+	$turn = 0;
+	@player_scores = qw(0 0 0 0);
+}
+
+sub score_trick {
+	my ($server, $target) = @_;
+	my $tc_max = $trickcards[0];
+	my $tc_winner = 0;
+	Irssi::print("scoring trick");
+	for(my $i = 0; $i < 4; $i++) {
+		if(compare_cards($trickcards[$i], $tc_max)) {
+			$tc_winner = $i;
+			$tc_max = $trickcards[$i];
+		}
+	}
+	$server->command("MSG $target " . $players[$tc_winner] . " wins the trick with " . untranslate($tc_max));
+	$player_scores[$tc_winner] += 1;
+	$server->command("MSG $target " . array_concat(@players));
+	$server->command("MSG $target " . array_concat(@player_scores));
+	$turn = $tc_winner;
+	$trickstarter = $tc_winner;
+	
+	if($trick == 13) {
+		return end_game($server, $target);
+	}
+	$server->command("MSG " . $players[$trickstarter] . " It's your turn.");
+}
+
 sub play_card {
 	my ($cardnum, $player, $server, $target) = @_;
 	package main;
@@ -102,7 +144,7 @@ sub play_card {
 	$hands[$position] = -1;
 	$deck[$cardnum] = -1;
 	
-	if($turn = $trickstarter) { # if it is the beginning of a trick
+	if($turn == $trickstarter) { # if it is the beginning of a trick
 		$tricksuit = $trickcards[$turn] % 4;
 	}
 	
@@ -113,47 +155,7 @@ sub play_card {
 	}
 	
 	$server->command("MSG " . $players[$turn] . " It's your turn.");
-}
-
-sub score_trick {
-	my ($server, $target) = @_;
-	my $tc_max = -1;
-	my $tc_winner = -1;
-	for(my $i = 0; $i < 4; $i++) {
-		if($trickcards[$i] > $tc_max) {
-			$tc_winner = $i;
-			$tc_max = $trickcards[$i];
-		}
-	}
-	$server->command("MSG $target " . $players[$tc_winner] . " wins the trick with " . untranslate($tc_max));
-	$player_scores[$tc_winner] += 1;
-	$server->command("MSG $target " . array_concat(@players));
-	$server->command("MSG $target " . array_concat(@player_scores));
-	$turn = $tc_winner;
-	$trickstarter = $tc_winner;
-	
-	if($trick == 13) {
-		return end_game($server, $target);
-	}
-	$server->command("MSG " . $players[$trickstarter] . " It's your turn.");
-}
-
-sub end_game {
-	my ($server, $target) = @_;
-	my $ps_winner = -1;
-	my $ps_max = -1;
-	for(my $i = 0; $i < 4; $i++) {
-		if($player_scores[$i] > $ps_max) {
-			$ps_winner = $i;
-			$ps_max = $player_scores[$i];
-		}
-	}
-	$server->command("MSG $target " . $players[$ps_winner] . " wins with " . $player_scores[$ps_winner] . " points!");
-	$playing = 0;
-	$trick = 0;
-	$numplayers = 0;
-	$turn = 0;
-	@player_scores = qw(0 0 0 0);
+	Irssi::print("$turn " . $players[$turn]);
 }
 
 sub handle_msgs {
@@ -195,6 +197,7 @@ sub translate {					# converts number / suit format to card numbers
 	my %suits = qw (c 0 d 1 h 2 s 3);
 	my %nums = qw(a 14 k 13 q 12 j 11);
 	if(not $suits{$suit}) {
+		Irssi::print("suit not found: $suit");
 		return -1;
 	}
 	if($nums{$num}) {$num = $nums{$num};}
@@ -211,7 +214,7 @@ sub untranslate {				# converts card numbers to number / suit format
 	return "$num $suit";
 }
 # 1;
-our $playing = 0;
+$playing = 0;
 Irssi::signal_add('event privmsg', 'handle_msgs');
 
 my $serv = Irssi::active_server();
