@@ -126,7 +126,6 @@ sub score_trick {
 
 sub play_card {
 	my ($cardnum, $player, $server, $target) = @_;
-	package main;
 	
 	Irssi::print("playing $cardnum from $player");
 	my $position = $deck[$cardnum];
