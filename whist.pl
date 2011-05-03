@@ -166,29 +166,49 @@ sub handle_msgs {
 
 	if(substr($message,0,5) eq "!deal" and ($playing == 0 or $server->command("MSG $target We're already playing!") and 0)) {
 		new_deck();
+		add_nick($nick, $server);
 	}
 	if(substr($message,0,5) eq "!play" and ($playing == 1 or $server->command("MSG $target We haven't started yet!") and 0)) {
 		play_card(translate(substr($message, 6)), substr($nick,0,length($nick)), $server, $target);
 	}
 	if(substr($message, 0, 5) eq "!join" and ($playing == 2 or $server->command("MSG $target You have to wait for the next game.") and 0)) {
-		$players[$numplayers] = $nick;
-		$numplayers++;
-		my $hand = "";
-		for(my $i = ($numplayers - 1) * 13; $i < $numplayers * 13; $i++ ) {
-			$hand = $hand . untranslate($hands[$i]) . ", ";
-		}
-		$server->command("MSG $nick Your hand contains $hand ");
+		add_nick($nick, $server);
 		if($numplayers == 4) {
 			$trick = 1;
 			$turn = 0;
 			@player_scores = qw(0 0 0 0);
 			$playing = 1;
-			$server->command("MSG $target trumps are " . untranslate($hands[51]));
-			$trumpsuit = $hands[51] % 4;
-			$server->command("MSG " . $players[0] . " it's your turn.");
+			$trickstarter = 1;
+			$server->command("MSG $target trumps are " . untranslate($hands[48]));
+			$trumpsuit = $hands[48] % 4;
+			$server->command("MSG " . $players[1] . " it's your turn.");
+		}
+	}
+	if(substr($message, 0, 5) eq "!hand" and ($playing == 1 or $server->command("MSG $target We haven't started yet!") and 0)) {
+		for(my $pnum = 0; $pnum < 4; $pnum++) {
+			if($players[$pnum] eq $nick) {
+				my $hs = "";
+				for(my $cnum = 13 * $pnum; $cnum < 13 * ($pnum + 1); $cnum++) {
+					if($hands[$cnum] != -1) {
+						$hs = $hs . ", " . untranslate($hands[$cnum]);
+					}
+				}
+				print("Your hand is $hs");
+			}
 		}
 	}
 	#Irssi::print("server: $server data: $data nick: $nick address: $address");
+}
+
+sub add_nick {
+	my ($nick, $server) = @_;
+	$players[$numplayers] = $nick;
+	$numplayers++;
+	my $hand = "";
+	for(my $i = ($numplayers - 1) * 13; $i < $numplayers * 13; $i++ ) {
+		$hand = $hand . untranslate($hands[$i]) . ", ";
+	}
+	$server->command("MSG $nick Your hand contains $hand ");
 }
 
 sub translate {					# converts number / suit format to card numbers
