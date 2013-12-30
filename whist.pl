@@ -109,7 +109,7 @@ sub whist {
    my $printpile = sub {
       my $str = "Pile:";
       for(my $i = 0; $i <= $#pile; $i++) {
-         my $p = $players{($turn - $#pile - 1 + $i) % 4};
+         my $p = $players[($turn - $#pile - 1 + $i) % 4];
          my $c = $i+5;
          $str = "$str \0030$c $p $pile[$i]";
       }
@@ -153,7 +153,7 @@ sub whist {
    my $playcard = sub {
       my ($player, $cardnum) = @_;
       $turn = ($turn + 1) % 4;
-      &$say("$players{$turn}'s turn.") unless($#pile == 2);
+      &$say("$players[$turn]'s turn.") unless($#pile == 2);
       @_ = (\@pile, $hands{$player}, $cardnum, $scoreround, $printpile);
       goto &whistplaycard;
    };
@@ -335,11 +335,11 @@ sub event_privmsg {
       &{$whistchandlers{$nick . $target}}($1);
    }
    if($text =~ /^!whist-help/) {
-      $server->command("MSG $target whistbot 0.99.7 deals a game of whist via IRC. See http://en.wikipedia.org/wiki/Whist for gameplay.");
-      $server->command("MSG $target A game is started by typing !deal [number], where [number] is the score the game is played to, often 7. Players join by saying !join");
-      $server->command("MSG $target Your hand is PMed to you and cards are in the form [number][suit] where number is of the form [2-9tjqka] and suit is [cdhk].");
-      $server->command("MSG $target A card is thrown by typing [card], *with* the brackets, e.g. [9c], [ts], [4d], [kh]. Your partner is automatically chosen by the order of !joins.");
-      $server->command("MSG $target Currently the dealer and second !joiner are on team 1, and the other two players are on team 2.");
+      $server->command("MSG $target \00303whistbot 0.99.7 deals a game of whist via IRC. See http://en.wikipedia.org/wiki/Whist for gameplay.");
+      $server->command("MSG $target \00303A game is started by typing !deal [number], where [number] is the score the game is played to, often 7. Players join by saying !join");
+      $server->command("MSG $target \00303Your hand is PMed to you and cards are in the form [number][suit] where number is of the form [2-9tjqka] and suit is [cdhk].");
+      $server->command("MSG $target \00303A card is thrown by typing [card], *with* the brackets, e.g. [9c], [ts], [4d], [kh]. Your partner is automatically chosen by the order of !joins.");
+      $server->command("MSG $target \00303Currently the dealer and second !joiner are on team 1, and the other two players are on team 2.");
    }
 }
 
