@@ -4,20 +4,20 @@ use vars qw($VERSION %IRSSI);
 
 use Irssi;
 use Irssi::Irc;
-$VERSION = '0.99.6';
+$VERSION = '0.99.7';
 %IRSSI = (
     authors     => 'scythe',
     contact     => 'scythe on irc.mountai.net',
-    name        => 'Whist 0.99.6',
+    name        => 'Whist 0.99.7',
     description => 'The perpetually-rewritten, never-finished metanet IRC whist bot. ',
     license     => 'Apache v2.',
 );
-#TODO: sort cards in hand
-#give order of play
-#fix first-round starter message
-#add who-played-what annotation when printing the pile
-#remove "get card xx from player" debug message
-#announce winner of last trick properly
+#TODO: sort cards in hand (hard)
+#give order of play (provisionally fixed)
+#fix first-round starter message (provisionally fixed)
+#add who-played-what annotation when printing the pile (provisionally fixed)
+#remove "get card xx from player" debug message (provisionally fixed)
+#announce winner of last trick properly (provisionally fixed)
 #pseudocode
 #
 #function whistplaycard(pile, player, cardnum, scoreround, getcard)
@@ -101,12 +101,20 @@ sub whist {
    my $say = sub {
       my ($message, $user) = @_;
       unless ($user) {
-         $server->command("MSG $channel $message");
+         $server->command("MSG $channel \00303$message");
          return;
       }
       $server->command("MSG $user $message");
    };
-   &$say("It works!");
+   my $printpile = sub {
+      my $str = "Pile:";
+      for(my $i = 0; $i <= $#pile; $i++) {
+         my $p = $players{($turn - $#pile - 1 + $i) % 4};
+         my $c = $i+5;
+         $str = "$str \0030$c $p $pile[$i]";
+      }
+      &$say($str);
+   };
    my $endgame = sub {
       my $winner = shift; 
       $winner++;
@@ -116,11 +124,11 @@ sub whist {
    };
    my $startround = sub { 
       $turn = shift;
-      &$say("$players[$turn] won the round!");
+      &$say(($round == 0) ? "$players[$turn] starts." : "$players[$turn] won the round!");
       @pile = ();
       $round = $round + 1;
       for my $player (@players) {
-         &$say(join(", ", $pscores{$player}, @{$hands{$player}}), $player);
+         &$say(join("; ", $pscores{$player}, @{$hands{$player}}), $player);
       }
    };
    my $deal = sub {
@@ -132,20 +140,21 @@ sub whist {
       goto &whistdeal;
    };
    my $scoregame = sub {
+      $turn = shift;
+      &$say("$players[$turn] won the last round!");
       @_ = (\@players, \%pscores, \@tscores, $scoremax, $endgame, $deal);
       goto &whistscoregame;
    };
    my $scoreround = sub {
-      &$say(join(", ", @pile));
+      &$printpile();
       @_ = ($round, $turn, \@pile, \@players, \%pscores, $trump, $startround, $scoregame);
       goto &whistscoreround;
    };
    my $playcard = sub {
       my ($player, $cardnum) = @_;
-      &$say("get card $card from $player atop ");
-      &$say(join(", ", @pile));
       $turn = ($turn + 1) % 4;
-      @_ = (\@pile, $hands{$player}, $cardnum, $scoreround);
+      &$say("$players{$turn}'s turn.") unless($#pile == 2);
+      @_ = (\@pile, $hands{$player}, $cardnum, $scoreround, $printpile);
       goto &whistplaycard;
    };
    my $getcard = sub {
@@ -225,6 +234,7 @@ sub whistscoreround {
    $max = ($prevwinner + $max) % 4;
    $$scores{$$players[$max]}++;
    if($round == 13) {
+      @_ = ($max);
       goto &$scoregame;
    }
    @_ = ($max);
@@ -232,11 +242,12 @@ sub whistscoreround {
 }
 
 sub whistplaycard {
-   my ($pile, $hand, $cardnum, $scoreround) = @_;
+   my ($pile, $hand, $cardnum, $scoreround, $printpile) = @_;
    push(@$pile, splice(@$hand, $cardnum, 1));
    if(scalar(@$pile) == 4) {
       goto &$scoreround;
    }
+   goto &$printpile;
 }
 
 sub whistgetcard {
@@ -262,7 +273,7 @@ sub whistgetcard {
 
 sub whistaddplayer {
    my ($round, $players, $player, $channel, $deal, $getcard) = @_;
-   if($round != 0) { return; }
+   if($#$players == 3) { return; }
    for (my $i = 0; $i <= $#$players; $i++) {
       if($$players[$i] eq $player) { return; }
    }
@@ -324,7 +335,7 @@ sub event_privmsg {
       &{$whistchandlers{$nick . $target}}($1);
    }
    if($text =~ /^!whist-help/) {
-      $server->command("MSG $target whistbot 0.99.6 deals a game of whist via IRC. See http://en.wikipedia.org/wiki/Whist for gameplay.");
+      $server->command("MSG $target whistbot 0.99.7 deals a game of whist via IRC. See http://en.wikipedia.org/wiki/Whist for gameplay.");
       $server->command("MSG $target A game is started by typing !deal [number], where [number] is the score the game is played to, often 7. Players join by saying !join");
       $server->command("MSG $target Your hand is PMed to you and cards are in the form [number][suit] where number is of the form [2-9tjqka] and suit is [cdhk].");
       $server->command("MSG $target A card is thrown by typing [card], *with* the brackets, e.g. [9c], [ts], [4d], [kh]. Your partner is automatically chosen by the order of !joins.");
