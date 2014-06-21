@@ -1,5 +1,9 @@
 whist.pl -- play whist via IRC
 
-whist.pl is currently in a very immature state of development. Perl is weird.
+whist.pl is not fully tested, mostly because I don't have anyone to play with me. The IRC channel it was written for died long ago.
 
-Play is initiated with the !deal command. Cards are played with !play {number} {suit}, i.e. !play 4 d for the four of diamonds or !play k h for the King of hearts.
+So it goes.
+
+Play is initiated with the !deal command. Other players join with !join; play starts immediately when there are four players.
+
+A card is thrown in brackets, with number and suit, e.g. [3d] for the three of diamonds, or [as] for the ace of spades.
