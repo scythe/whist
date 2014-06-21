@@ -1,9 +1,9 @@
-
 use strict;
 use vars qw($VERSION %IRSSI);
 
 use Irssi;
 use Irssi::Irc;
+
 $VERSION = '0.99.7';
 %IRSSI = (
     authors     => 'scythe',
@@ -344,4 +344,5 @@ sub event_privmsg {
 }
 
 Irssi::signal_add("event privmsg", "event_privmsg");
+
 

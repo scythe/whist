@@ -1,0 +1,5 @@
+whist.pl -- play whist via IRC
+
+whist.pl is currently in a very immature state of development. Perl is weird.
+
+Play is initiated with the !deal command. Cards are played with !play {number} {suit}, i.e. !play 4 d for the four of diamonds or !play k h for the King of hearts.
